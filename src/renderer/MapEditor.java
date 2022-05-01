@@ -21,6 +21,7 @@ public class MapEditor extends JPanel {
 
     public int[][] floorMap;
     public int[][] ceilMap;
+    public int[][] tagMap;
 
     private int cursorX = 0;
     private int cursorY = 0;
@@ -30,7 +31,7 @@ public class MapEditor extends JPanel {
     private int markerBX = 0;
     private int markerBY = 0;
 
-    private int mapMode = 1;
+    private int mapMode = 0;
 
     public void init() {
         frame = new JFrame();
@@ -50,20 +51,24 @@ public class MapEditor extends JPanel {
 
         floorMap = new int[40][40];
         ceilMap = new int[40][40];
+        tagMap = new int[40][40];
 
-        readFloorMap("data/wfloor.txt", "data/wceil.txt");
+        readFloorMap("data/wfloor.txt", "data/wceil.txt", "data/tmap.txt");
     }
 
-    public void readFloorMap(String filename, String filename2) {
+    public void readFloorMap(String filename, String filename2, String filename3) {
         File file = new File(filename);
         File file2 = new File(filename2);
+        File file3 = new File(filename3);
 
         Scanner scanner = null;
         Scanner scanner2 = null;
+        Scanner scanner3 = null;
 
         try {
             scanner = new Scanner(file);
             scanner2 = new Scanner(file2);
+            scanner3 = new Scanner(file3);
         } catch (IOException ignored) {
         }
 
@@ -94,9 +99,23 @@ public class MapEditor extends JPanel {
 
             j++;
         }
+
+        j = 0;
+
+        while (scanner3.hasNextLine()) {
+            String line = scanner3.nextLine();
+
+            String[] content = line.split(" ");
+
+            for (int i = 0; i < 40; i++) {
+                tagMap[j][i] = Integer.parseInt(content[i]);
+            }
+
+            j++;
+        }
     }
 
-    public void writeToFile(String filenameA, String filenameB, String filenameC) {
+    public void writeToFile(String filenameA, String filenameB, String filenameC, String filenameD) {
         File fileA = new File(filenameA);
 
         FileWriter writerA = null;
@@ -159,6 +178,37 @@ public class MapEditor extends JPanel {
             e.printStackTrace();
         }
 
+        File fileD = new File(filenameD);
+
+        FileWriter writerD = null;
+
+        try {
+            writerD = new FileWriter(fileD);
+        } catch (IOException ignored) {
+        }
+
+        for (int i = 0; i < 40; i++) {
+            for (int j = 0; j < 40; j++) {
+                try {
+                    writerD.write(String.valueOf(tagMap[i][j]));
+
+                    writerD.write(" ");
+                } catch (IOException ignored) {
+                }
+            }
+
+            try {
+                writerD.write(System.lineSeparator());
+            } catch (IOException ignored) {
+            }
+        }
+
+        try {
+            writerD.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         File fileC = new File(filenameC);
 
         FileWriter writerC = null;
@@ -210,12 +260,20 @@ public class MapEditor extends JPanel {
                                 floorMap[i][j] = Math.min(40, floorMap[i][j]);
                             }
                         }
-                    } else {
+                    } else if(mapMode == 1){
                         for (int i = markerAY; i <= markerBY; i++) {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 ceilMap[i][j]++;
 
                                 ceilMap[i][j] = Math.min(40, ceilMap[i][j]);
+                            }
+                        }
+                    } else if(mapMode == 2) {
+                        for (int i = markerAY; i <= markerBY; i++) {
+                            for (int j = markerAX; j <= markerBX; j++) {
+                                tagMap[i][j]++;
+
+                                tagMap[i][j] = Math.min(40, tagMap[i][j]);
                             }
                         }
                     }
@@ -229,7 +287,7 @@ public class MapEditor extends JPanel {
                                 floorMap[i][j] = Math.max(0, floorMap[i][j]);
                             }
                         }
-                    } else {
+                    } else if (mapMode == 1){
                         for (int i = markerAY; i <= markerBY; i++) {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 ceilMap[i][j]--;
@@ -237,14 +295,21 @@ public class MapEditor extends JPanel {
                                 ceilMap[i][j] = Math.max(0, ceilMap[i][j]);
                             }
                         }
+                    } else if (mapMode == 2) {
+                        for (int i = markerAY; i <= markerBY; i++) {
+                            for (int j = markerAX; j <= markerBX; j++) {
+                                tagMap[i][j]--;
+
+                                tagMap[i][j] = Math.max(0, tagMap[i][j]);
+                            }
+                        }
                     }
                 }
                 case 9 -> {
-                    writeToFile("data/wfloor.txt", "data/wceil.txt", "data/lights.txt");
+                    writeToFile("data/wfloor.txt", "data/wceil.txt", "data/lights.txt", "data/tmap.txt");
                 }
                 case 10 -> {
-                    mapMode = 1 - mapMode;
-
+                    mapMode = 1;
 //                    System.out.println(mapMode);
                 }
                 case 11 -> {
@@ -252,6 +317,7 @@ public class MapEditor extends JPanel {
                         for (int j = 0; j < 40; j++) {
                             ceilMap[i][j] = 40;
                             floorMap[i][j] = 0;
+                            tagMap[i][j] = 1;
                         }
                     }
                 }
@@ -261,6 +327,13 @@ public class MapEditor extends JPanel {
                     Light light = new Light(cursorY, lightHeight, cursorX, 2, Color.GREEN, false);
 
                     lightList.add(light);
+                }
+
+                case 13 -> {
+                    mapMode = 0;
+                }
+                case 14 -> {
+                    mapMode = 2;
                 }
             }
 
@@ -285,8 +358,10 @@ public class MapEditor extends JPanel {
 
                     if (mapMode == 0) {
                         b = floorMap[i][j] * 5;
-                    } else {
+                    } else if(mapMode == 1){
                         b = ceilMap[i][j] * 5;
+                    } else if(mapMode == 2) {
+                        b = tagMap[i][j] * 5;
                     }
 
                     b = Math.max(0, Math.min(255, b));
@@ -310,8 +385,10 @@ public class MapEditor extends JPanel {
 
                 if (mapMode == 0) {
                     g.drawString(String.valueOf(floorMap[i][j]), j * 15 + 7, i * 15 + 7);
-                } else {
+                } else if (mapMode == 1){
                     g.drawString(String.valueOf(ceilMap[i][j]), j * 15 + 7, i * 15 + 7);
+                } else if (mapMode == 2) {
+                    g.drawString(String.valueOf(tagMap[i][j]), j * 15 + 7, i * 15 + 7);
                 }
             }
         }

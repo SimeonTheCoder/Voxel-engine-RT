@@ -222,7 +222,7 @@ public class Window extends JPanel {
 //        lighta.x = Math.sin(time / 300000.) * 30;
 //        lighta.x = Math.max(0, lighta.x);
 
-//        lightList.add(l);
+        lightList.add(l);
 
         for (int i = 0; i < states.length; i++) {
             for (int j = 0; j < states[0].length; j++) {

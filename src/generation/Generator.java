@@ -16,6 +16,7 @@ public class Generator {
     public static int[][][] getStates() {
         int[][] worldFloorMap = ReadFile.read("data/wfloor.txt");
         int[][] worldCeilMap = ReadFile.read("data/wceil.txt");
+        int[][] worldTagMap = ReadFile.read("data/tmap.txt");
 
         int[][][] states = new int[40][40][40];
 
@@ -33,7 +34,11 @@ public class Generator {
                             for (int m = 0; m < scale; m++) {
                                 for (int p = 0; p < scale; p++) {
                                     try {
-                                        states[i / scale + l][j / scale + m][k / scale + p] = 1;
+                                        if(k == worldFloorMap[j/scale][i/scale]) {
+                                            states[i / scale + l][j / scale + m][k / scale + p] = worldTagMap[j/scale][i/scale];
+                                        }else{
+                                            states[i / scale + l][j / scale + m][k / scale + p] = 1;
+                                        }
                                     } catch (Exception exception) {
                                         System.out.println();
                                     }
@@ -198,7 +203,7 @@ public class Generator {
 
                     int ll = 0;
 
-                    if (states[i][j][k] == 1 && ambientMap[i][j][k] > 0) {
+                    if (states[i][j][k] != 0 && states[i][j][k] != 3 && ambientMap[i][j][k] > 0) {
                         double deltaX = light.x - j;
                         double deltaY = light.y - k;
                         double deltaZ = light.z - i;
@@ -381,6 +386,16 @@ public class Generator {
                         if(i == 0) {
                             cube.removePlane(0);
                         }else if(i == 39) {
+                            cube.removePlane(5);
+                        }
+
+                        if(states[i][j][k] != 4) {
+                            cube.removePlane(6);
+                        }else{
+                            cube.removePlane(0);
+                            cube.removePlane(3);
+                            cube.removePlane(4);
+                            cube.removePlane(1);
                             cube.removePlane(5);
                         }
 

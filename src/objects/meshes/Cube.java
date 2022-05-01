@@ -30,19 +30,22 @@ public class Cube {
         planes.add(new Plane(new Point3[]{point1, point4, point8, point5})); //Left face 3
         planes.add(new Plane(new Point3[]{point2, point3, point7, point6})); //Right face 4
         planes.add(new Plane(new Point3[]{point5, point6, point7, point8})); //Back face 5
+        planes.add(new Plane(new Point3[]{point5, point6, point3, point4})); //Ramp face 6
 
         planes.get(0).color = Color.RED;
+        planes.get(6).color = Color.WHITE;
         planes.get(5).color = Color.YELLOW;
         planes.get(4).color = Color.GREEN;
         planes.get(3).color = Color.GREEN;
         planes.get(2).color = Color.BLUE;
         planes.get(1).color = Color.BLUE;
 
-        for (Plane plane : planes) {
-            plane.color = Color.WHITE;
-        }
+//        for (Plane plane : planes) {
+//            plane.color = Color.WHITE;
+//        }
 
         planes.get(0).parentCube = this;
+        planes.get(6).parentCube = this;
         planes.get(5).parentCube = this;
         planes.get(4).parentCube = this;
         planes.get(3).parentCube = this;
