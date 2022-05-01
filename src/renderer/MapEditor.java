@@ -51,8 +51,8 @@ public class MapEditor extends JPanel {
         lightList.add(new Light(0, 0, 0, 0, Color.WHITE, false));
         lightList.add(new Light(0, 0, 0, 10, Color.WHITE, true));
 
-        floorMap = new int[20][20];
-        ceilMap = new int[20][20];
+        floorMap = new int[40][40];
+        ceilMap = new int[40][40];
 
         readFloorMap("data/wfloor.txt", "data/wceil.txt");
     }
@@ -76,7 +76,7 @@ public class MapEditor extends JPanel {
 
             String[] content = line.split(" ");
 
-            for(int i=0; i<20; i++) {
+            for(int i=0; i<40; i++) {
                 floorMap[j][i] = Integer.parseInt(content[i]);
             }
 
@@ -90,7 +90,7 @@ public class MapEditor extends JPanel {
 
             String[] content = line.split(" ");
 
-            for(int i=0; i<20; i++) {
+            for(int i=0; i<40; i++) {
                 ceilMap[j][i] = Integer.parseInt(content[i]);
             }
 
@@ -107,8 +107,8 @@ public class MapEditor extends JPanel {
             writerA = new FileWriter(fileA);
         }catch (IOException ignored) {}
 
-        for(int i=0; i<20; i++) {
-            for(int j=0; j<20; j++) {
+        for(int i=0; i<40; i++) {
+            for(int j=0; j<40; j++) {
                 try {
                     writerA.write(String.valueOf(floorMap[i][j]));
 
@@ -135,8 +135,8 @@ public class MapEditor extends JPanel {
             writerB = new FileWriter(fileB);
         }catch (IOException ignored) {}
 
-        for(int i=0; i<20; i++) {
-            for(int j=0; j<20; j++) {
+        for(int i=0; i<40; i++) {
+            for(int j=0; j<40; j++) {
                 try {
                     writerB.write(String.valueOf(ceilMap[i][j]));
 
@@ -177,7 +177,7 @@ public class MapEditor extends JPanel {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 floorMap[i][j]++;
 
-                                floorMap[i][j] = Math.min(20, floorMap[i][j]);
+                                floorMap[i][j] = Math.min(40, floorMap[i][j]);
                             }
                         }
                     }else{
@@ -185,7 +185,7 @@ public class MapEditor extends JPanel {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 ceilMap[i][j]++;
 
-                                ceilMap[i][j] = Math.min(20, ceilMap[i][j]);
+                                ceilMap[i][j] = Math.min(40, ceilMap[i][j]);
                             }
                         }
                     }
@@ -218,9 +218,9 @@ public class MapEditor extends JPanel {
 //                    System.out.println(mapMode);
                 }
                 case 11 -> {
-                    for(int i=0; i<20; i++) {
-                        for(int j=0; j<20; j++) {
-                            ceilMap[i][j] = 20;
+                    for(int i=0; i<40; i++) {
+                        for(int j=0; j<40; j++) {
+                            ceilMap[i][j] = 40;
                             floorMap[i][j] = 0;
                         }
                     }
@@ -247,9 +247,9 @@ public class MapEditor extends JPanel {
                     int b = 0;
 
                     if(mapMode == 0) {
-                        b = floorMap[i][j] * 10;
+                        b = floorMap[i][j] * 5;
                     }else{
-                        b = ceilMap[i][j] * 10;
+                        b = ceilMap[i][j] * 5;
                     }
 
                     b = Math.max(0, Math.min(255, b));
@@ -259,7 +259,7 @@ public class MapEditor extends JPanel {
                     g.setColor(color);
                 }
 
-                g.fillRect(j * 20, i * 20, 20, 20);
+                g.fillRect(j * 15, i * 15, 15, 15);
 
                 if(floorMap[i][j] > 0) {
                     g.setColor(Color.GREEN);
@@ -267,14 +267,14 @@ public class MapEditor extends JPanel {
                     g.setColor(Color.BLUE);
                 }
 
-                g.drawRect(j * 20, i * 20, 20, 20);
+                g.drawRect(j * 15, i * 15, 15, 15);
 
                 g.setColor(Color.WHITE);
 
                 if(mapMode == 0) {
-                    g.drawString(String.valueOf(floorMap[i][j]), j * 20 + 10, i * 20 + 10);
+                    g.drawString(String.valueOf(floorMap[i][j]), j * 15 + 7, i * 15 + 7);
                 }else{
-                    g.drawString(String.valueOf(ceilMap[i][j]), j * 20 + 10, i * 20 + 10);
+                    g.drawString(String.valueOf(ceilMap[i][j]), j * 15 + 7, i * 15 + 7);
                 }
             }
         }

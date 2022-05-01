@@ -19,7 +19,7 @@ public class ReadFile {
         int i=0;
         int j=0;
 
-        int[][] result = new int[20][20];
+        int[][] result = new int[40][40];
 
         while(scanner.hasNextLine()) {
             j = 0;

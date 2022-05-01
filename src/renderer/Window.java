@@ -13,8 +13,11 @@ import objects.repositories.MeshRepository;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Window extends JPanel {
     public static int INPUT_BUFFER;
@@ -40,7 +43,43 @@ public class Window extends JPanel {
     private boolean wireframe = false;
     private boolean unlit = false;
 
+    public void readLights(String filename) {
+        File file = new File(filename);
+
+        Scanner scanner = null;
+
+        try{
+            scanner = new Scanner(file);
+        }catch (IOException exception) {}
+
+        while(scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+
+            String[] content = line.split(" ");
+
+            int light_x = Integer.parseInt(content[0]);
+            int light_y = Integer.parseInt(content[1]);
+            int light_z = Integer.parseInt(content[2]);
+
+            int light_r = Integer.parseInt(content[3]);
+            int light_g = Integer.parseInt(content[4]);
+            int light_b = Integer.parseInt(content[5]);
+
+            Color light_color = new Color(light_r, light_g, light_b);
+
+            int light_i = Integer.parseInt(content[6]);
+
+            boolean isAmbient = (Integer.parseInt(content[7]) != 0);
+
+            Light light = new Light(light_x, light_y, light_z, light_i, light_color, isAmbient);
+
+            lightList.add(light);
+        }
+    }
+
     public void init() {
+        lightList = new ArrayList<>();
+
         frame = new JFrame();
 
         frame.add(this);
@@ -56,15 +95,15 @@ public class Window extends JPanel {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
 
-        lightList = new ArrayList<>();
+//        lighta = new Light(6, 40 - 27, -3, 3, Color.RED, false);
 
-        lighta = new Light(6, 40-27, -3, 3, Color.RED, false);
-
-        lightList.add(lighta);
+//        lightList.add(lighta);
 //        lightList.add(new Light(0, 0, 0, 10, Color.WHITE, true));
     }
 
     public void generateMap() {
+        readLights("data/lights.txt");
+
         repository = new MeshRepository();
 
         states = Generator.getStates();
@@ -178,14 +217,12 @@ public class Window extends JPanel {
 
         handleInput();
 
-        Light l = new Light(player.x/25, 40-player.y/25, player.z/25, 3, Color.WHITE, false);
+        Light l = new Light(player.x / 25, 40 - player.y / 25, player.z / 25, 3, Color.WHITE, false);
 
-        lighta.x = Math.sin(time / 300000.) * 30;
-        lighta.x = Math.max(0, lighta.x);
+//        lighta.x = Math.sin(time / 300000.) * 30;
+//        lighta.x = Math.max(0, lighta.x);
 
-//        lightList.add(l);
-
-//        cameraCulling(new Player(0, 0, 0, 0));
+        lightList.add(l);
 
         for (int i = 0; i < states.length; i++) {
             for (int j = 0; j < states[0].length; j++) {
@@ -197,7 +234,7 @@ public class Window extends JPanel {
             }
         }
 
-        if(!unlit) {
+        if (!unlit) {
             LightningData data = new LightningData(states.length, states[0].length, states[0][0].length);
 //
             for (Light light : lightList) {
@@ -227,7 +264,21 @@ public class Window extends JPanel {
             Polygon polygon = Transformations.projectPlane(plane, player);
 
             if (unlit) {
-                g.setColor(plane.color);
+                int r = plane.color.getRed();
+                int gr = plane.color.getGreen();
+                int b = plane.color.getBlue();
+
+                if(plane.getPoints()[0].z - player.z > 0) {
+                    r -= (plane.getPoints()[0].z - player.z - 0) / 8;
+                    gr -= (plane.getPoints()[0].z - player.z - 0) / 8;
+                    b -= (plane.getPoints()[0].z - player.z - 0) / 8;
+                }
+
+                r = Math.max(0, Math.min(255, r));
+                gr = Math.max(0, Math.min(255, gr));
+                b = Math.max(0, Math.min(255, b));
+
+                g.setColor(new Color(r, gr, b, plane.color.getAlpha()));
             }
 
             if (!unlit) {
@@ -240,32 +291,17 @@ public class Window extends JPanel {
                 int brightnessb = (int) (lmapb[currSectorZ][currSectorX][currSectorY] / 512. * plane.color.getBlue() + lmapb[currSectorZ][currSectorX][currSectorY] / 2);
                 int brightnessa = plane.color.getAlpha();
 
+                if(plane.getPoints()[0].z - player.z > 1500) {
+                    brightnessr -= (plane.getPoints()[0].z - player.z - 1500) / 2;
+                    brightnessg -= (plane.getPoints()[0].z - player.z - 1500) / 2;
+                    brightnessb -= (plane.getPoints()[0].z - player.z - 1500) / 2;
+                }
+
                 brightnessr = Math.min(255, Math.max(0, brightnessr));
                 brightnessg = Math.min(255, Math.max(0, brightnessg));
                 brightnessb = Math.min(255, Math.max(0, brightnessb));
 
-                int brightnessr2 = 0;
-                int brightnessg2 = 0;
-                int brightnessb2 = 0;
-
-                if(currSectorX - 1 >= 0 && currSectorX + 1 <= 39) {
-                    brightnessr2 = (int) (lmapr[currSectorZ][currSectorX - 1][currSectorY] / 512. * plane.color.getRed() + lmapr[currSectorZ][currSectorX - 1][currSectorY] / 2);
-                    brightnessg2 = (int) (lmapg[currSectorZ][currSectorX - 1][currSectorY] / 512. * plane.color.getGreen() + lmapg[currSectorZ][currSectorX - 1][currSectorY] / 2);
-                    brightnessb2 = (int) (lmapb[currSectorZ][currSectorX - 1][currSectorY] / 512. * plane.color.getBlue() + lmapb[currSectorZ][currSectorX - 1][currSectorY] / 2);
-
-                    brightnessr2 = Math.min(255, Math.max(0, brightnessr2));
-                    brightnessg2 = Math.min(255, Math.max(0, brightnessg2));
-                    brightnessb2 = Math.min(255, Math.max(0, brightnessb2));
-                }
-
                 g.setColor(new Color(brightnessr, brightnessg, brightnessb, brightnessa));
-
-//                Graphics2D g2d = (Graphics2D)g;
-//                Color s1 = new Color(brightnessr2, brightnessg2, brightnessb2);
-//                Color e = new Color(brightnessr, brightnessg, brightnessb);
-//                GradientPaint gradient = new GradientPaint(polygon.xpoints[2],polygon.ypoints[2],s1,polygon.xpoints[0],polygon.ypoints[0],e,true);
-//                g2d.setPaint(gradient);
-//                g2d.fillPolygon(polygon);
             }
 
             g.fillPolygon(polygon);

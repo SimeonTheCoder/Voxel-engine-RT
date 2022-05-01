@@ -27,10 +27,10 @@ public class Generator {
                         System.out.println();
                     }
 
-                    if (k <= worldFloorMap[j / scale / 2][i / scale / 2] || k >= worldCeilMap[j / scale / 2][i / scale / 2]) {
-                        for (int l = 0; l < scale * 2; l++) {
-                            for (int m = 0; m < scale * 2; m++) {
-                                for (int p = 0; p < scale * 2; p++) {
+                    if (k <= worldFloorMap[j / scale][i / scale] || k >= worldCeilMap[j / scale][i / scale]) {
+                        for (int l = 0; l < scale; l++) {
+                            for (int m = 0; m < scale; m++) {
+                                for (int p = 0; p < scale; p++) {
                                     try {
                                         states[i / scale + l][j / scale + m][k / scale + p] = 1;
                                     } catch (Exception exception) {

@@ -19,7 +19,7 @@ public class Transformations {
 
         copy.z = Math.max(0, copy.z);
 
-        double newX = copy.x / copy.z * 250. * 3 * 2 + 500;
+        double newX = copy.x / copy.z * 250. * 3 * 2 * 2 + 500;
         double newY = copy.y / copy.z * 250. * 3 * 2 + 500;
 
         point2 = new Point2(newX, newY);
