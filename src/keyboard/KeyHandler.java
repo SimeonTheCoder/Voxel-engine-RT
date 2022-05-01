@@ -24,7 +24,8 @@ public class KeyHandler implements KeyListener {
             case '[' -> MapEditor.INPUT_BUFFER = 8;
             case 'v' -> MapEditor.INPUT_BUFFER = 9;
             case 't' -> MapEditor.INPUT_BUFFER = 10;
-            case 'c' -> MapEditor.INPUT_BUFFER = 11;
+            case 'r' -> MapEditor.INPUT_BUFFER = 11;
+            case 'l' -> MapEditor.INPUT_BUFFER = 12;
         }
 
         System.out.println(e.getKeyChar());

@@ -2,6 +2,7 @@ package generation;
 
 import files.ReadFile;
 import generation.lightning.LightningData;
+import objects.Player;
 import objects.Point3;
 import objects.meshes.Cube;
 import objects.meshes.Light;
@@ -47,48 +48,110 @@ public class Generator {
         return states;
     }
 
-    public static LightningData getLightmap(int[][][] states, Light currLight, int[][][] lightmapr, int[][][] lightmapg, int[][][] lightmapb, boolean ao) {
+    public static LightningData getLightmap(int[][][] states, Light currLight, int[][][] lightmapr, int[][][] lightmapg, int[][][] lightmapb, boolean ao, int region, Player player) {
         LightningData data = new LightningData(lightmapr.length, lightmapr[0].length, lightmapr[0][0].length);
 
         int[][][] ambientMap = new int[states.length][states[0].length][states[0][0].length];
 
-        for (int i = 0; i < states.length; i++) {
-            for (int j = 0; j < states[0].length; j++) {
-                for (int k = 0; k < states[0][0].length; k++) {
-                    int nCount = 0;
+//        if(ao) {
+            for (int i = 0; i < states.length; i++) {
+                for (int j = 0; j < states[0].length; j++) {
+                    for (int k = 0; k < states[0][0].length; k++) {
+                        int px = (int) player.x;
+                        int py = (int) player.y;
+                        int pz = (int) player.z;
 
-                    if (i > 0 && states[i - 1][j][k] != 0) {
-                        nCount++;
+                        px /= CONSTANTS.STEP_SIZE;
+                        py /= CONSTANTS.STEP_SIZE;
+                        pz /= CONSTANTS.STEP_SIZE;
+
+                        if(px - CONSTANTS.X_VIEW_RANGE <= j && j <= px + CONSTANTS.X_VIEW_RANGE) {
+
+                        }else{
+                            continue;
+                        }
+
+                        if(py - CONSTANTS.Y_VIEW_RANGE <= k && k <= py + CONSTANTS.Y_VIEW_RANGE) {
+
+                        }else{
+                            continue;
+                        }
+
+                        if(pz - CONSTANTS.Z_VIEW_RANGE <= i && i <= pz + CONSTANTS.Z_VIEW_RANGE) {
+
+                        }else{
+                            continue;
+                        }
+
+                        int nCount = 0;
+
+                        if (i > 0 && states[i - 1][j][k] == 0) {
+                            nCount++;
+                        }
+
+                        if (i < states.length - 1 && states[i + 1][j][k] == 0) {
+                            nCount++;
+                        }
+
+                        if (j > 0 && states[i][j - 1][k] == 0) {
+                            nCount++;
+                        }
+
+                        if (j < states[0].length - 1 && states[i][j + 1][k] == 0) {
+                            nCount++;
+                        }
+
+                        if (k > 0 && states[i][j][k - 1] == 0) {
+                            nCount++;
+                        }
+
+                        if (k < states[0][0].length - 1 && states[i][j][k + 1] == 0) {
+                            nCount++;
+                        }
+
+                        ambientMap[i][j][k] = nCount;
                     }
-
-                    if (i < states.length - 1 && states[i + 1][j][k] != 0) {
-                        nCount++;
-                    }
-
-                    if (j > 0 && states[i][j - 1][k] != 0) {
-                        nCount++;
-                    }
-
-                    if (j < states[0].length - 1 && states[i][j + 1][k] != 0) {
-                        nCount++;
-                    }
-
-                    if (k > 0 && states[i][j][k - 1] != 0) {
-                        nCount++;
-                    }
-
-                    if (k < states[0][0].length - 1 && states[i][j][k + 1] != 0) {
-                        nCount++;
-                    }
-
-                    ambientMap[i][j][k] = 6 - nCount;
                 }
             }
-        }
+//        }
 
         for (int i = 0; i < states.length; i += CONSTANTS.SCALE) {
             for (int j = 0; j < states[0].length; j += CONSTANTS.SCALE) {
                 for (int k = 0; k < states[0][0].length; k += CONSTANTS.SCALE) {
+                    if(region == 0) {
+                        if(i > 19 || j > 19 || k > 19) {
+                            continue;
+                        }
+                    }else if(region == 1) {
+                        if(i > 19 || j < 20 || k > 19) {
+                            continue;
+                        }
+                    }else if(region == 2) {
+                        if(i > 19 || j > 19 || k < 20) {
+                            continue;
+                        }
+                    }else if(region == 3) {
+                        if(i > 19 || j < 20 || k < 20) {
+                            continue;
+                        }
+                    }else if(region == 4) {
+                        if(i < 20 || j > 19 || k > 19) {
+                            continue;
+                        }
+                    }else if(region == 5) {
+                        if(i < 20 || j < 20 || k > 19) {
+                            continue;
+                        }
+                    }else if(region == 6) {
+                        if(i < 20 || j > 19 || k < 20) {
+                            continue;
+                        }
+                    }else if(region == 7) {
+                        if(i < 20 || j < 20 || k < 20) {
+                            continue;
+                        }
+                    }
+
                     if (currLight.isAmbient) {
                         lightmapr[i][j][k] = (int) currLight.intensity * 5;
                         lightmapg[i][j][k] = (int) currLight.intensity * 5;
@@ -135,7 +198,7 @@ public class Generator {
 
                     int ll = 0;
 
-                    if (states[i][j][k] == 1) {
+                    if (states[i][j][k] == 1 && ambientMap[i][j][k] > 0) {
                         double deltaX = light.x - j;
                         double deltaY = light.y - k;
                         double deltaZ = light.z - i;
@@ -171,7 +234,7 @@ public class Generator {
                         }
 
                         if (!collision) {
-                            ll += (int) ((50*Math.sqrt(light.intensity) - distance * 1.5) * light.intensity);
+                            ll += (int) ((50 - distance * 1.5) * light.intensity);
 
 //                            ll -= ambientMap[i][j][k] * 200;
 
@@ -187,9 +250,9 @@ public class Generator {
                     data.lmapb[i][j][k] = lightmapb[i][j][k];
 
                     if (ao) {
-                        data.lmapr[i][j][k] -= ambientMap[i][j][k] * 20;
-                        data.lmapg[i][j][k] -= ambientMap[i][j][k] * 20;
-                        data.lmapb[i][j][k] -= ambientMap[i][j][k] * 20;
+                        data.lmapr[i][j][k] -= ambientMap[i][j][k] * 10;
+                        data.lmapg[i][j][k] -= ambientMap[i][j][k] * 10;
+                        data.lmapb[i][j][k] -= ambientMap[i][j][k] * 10;
                     }
 
                     for (int m = 0; m < CONSTANTS.SCALE; m++) {

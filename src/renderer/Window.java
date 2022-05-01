@@ -57,9 +57,9 @@ public class Window extends JPanel {
 
             String[] content = line.split(" ");
 
-            int light_x = Integer.parseInt(content[0]);
-            int light_y = Integer.parseInt(content[1]);
-            int light_z = Integer.parseInt(content[2]);
+            double light_x = Double.parseDouble(content[0]);
+            double light_y = Double.parseDouble(content[1]);
+            double light_z = Double.parseDouble(content[2]);
 
             int light_r = Integer.parseInt(content[3]);
             int light_g = Integer.parseInt(content[4]);
@@ -67,7 +67,7 @@ public class Window extends JPanel {
 
             Color light_color = new Color(light_r, light_g, light_b);
 
-            int light_i = Integer.parseInt(content[6]);
+            double light_i = Double.parseDouble(content[6]);
 
             boolean isAmbient = (Integer.parseInt(content[7]) != 0);
 
@@ -157,7 +157,7 @@ public class Window extends JPanel {
                     ao = !ao;
 
                     for (Light light : lightList) {
-                        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao));
+                        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, 0, player));
                     }
                 }
 
@@ -222,7 +222,7 @@ public class Window extends JPanel {
 //        lighta.x = Math.sin(time / 300000.) * 30;
 //        lighta.x = Math.max(0, lighta.x);
 
-        lightList.add(l);
+//        lightList.add(l);
 
         for (int i = 0; i < states.length; i++) {
             for (int j = 0; j < states[0].length; j++) {
@@ -238,7 +238,12 @@ public class Window extends JPanel {
             LightningData data = new LightningData(states.length, states[0].length, states[0][0].length);
 //
             for (Light light : lightList) {
-                data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao));
+                for(int i=0; i<8; i++) {
+                    LightningThread thread = new LightningThread(light, lmapr, lmapg, lmapb, ao, i, data, states, player);
+
+                    thread.run();
+//                    data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, i));
+                }
             }
 
             lmapr = data.lmapr;

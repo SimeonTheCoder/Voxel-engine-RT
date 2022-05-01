@@ -48,9 +48,6 @@ public class MapEditor extends JPanel {
 
         lightList = new ArrayList<Light>();
 
-        lightList.add(new Light(0, 0, 0, 0, Color.WHITE, false));
-        lightList.add(new Light(0, 0, 0, 10, Color.WHITE, true));
-
         floorMap = new int[40][40];
         ceilMap = new int[40][40];
 
@@ -64,61 +61,65 @@ public class MapEditor extends JPanel {
         Scanner scanner = null;
         Scanner scanner2 = null;
 
-        try{
+        try {
             scanner = new Scanner(file);
             scanner2 = new Scanner(file2);
-        }catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
 
         int j = 0;
 
-        while(scanner.hasNextLine()) {
+        while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
 
             String[] content = line.split(" ");
 
-            for(int i=0; i<40; i++) {
+            for (int i = 0; i < 40; i++) {
                 floorMap[j][i] = Integer.parseInt(content[i]);
             }
 
-            j ++;
+            j++;
         }
 
         j = 0;
 
-        while(scanner2.hasNextLine()) {
+        while (scanner2.hasNextLine()) {
             String line = scanner2.nextLine();
 
             String[] content = line.split(" ");
 
-            for(int i=0; i<40; i++) {
+            for (int i = 0; i < 40; i++) {
                 ceilMap[j][i] = Integer.parseInt(content[i]);
             }
 
-            j ++;
+            j++;
         }
     }
 
-    public void writeToFile(String filenameA, String filenameB) {
+    public void writeToFile(String filenameA, String filenameB, String filenameC) {
         File fileA = new File(filenameA);
 
         FileWriter writerA = null;
 
         try {
             writerA = new FileWriter(fileA);
-        }catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
 
-        for(int i=0; i<40; i++) {
-            for(int j=0; j<40; j++) {
+        for (int i = 0; i < 40; i++) {
+            for (int j = 0; j < 40; j++) {
                 try {
                     writerA.write(String.valueOf(floorMap[i][j]));
 
                     writerA.write(" ");
-                } catch (IOException ignored) { }
+                } catch (IOException ignored) {
+                }
             }
 
             try {
                 writerA.write(System.lineSeparator());
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
 
         try {
@@ -133,20 +134,23 @@ public class MapEditor extends JPanel {
 
         try {
             writerB = new FileWriter(fileB);
-        }catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
 
-        for(int i=0; i<40; i++) {
-            for(int j=0; j<40; j++) {
+        for (int i = 0; i < 40; i++) {
+            for (int j = 0; j < 40; j++) {
                 try {
                     writerB.write(String.valueOf(ceilMap[i][j]));
 
                     writerB.write(" ");
-                } catch (IOException ignored) { }
+                } catch (IOException ignored) {
+                }
             }
 
             try {
                 writerB.write(System.lineSeparator());
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
 
         try {
@@ -154,15 +158,41 @@ public class MapEditor extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        File fileC = new File(filenameC);
+
+        FileWriter writerC = null;
+
+        try {
+            writerC = new FileWriter(fileC);
+        } catch (IOException ignored) {
+        }
+
+        for (Light light : lightList) {
+            try {
+                writerC.write(light.x + " " + light.y + " " + light.z
+                        + " " + light.color.getRed() + " " + light.color.getGreen() +
+                        " " + light.color.getBlue() + " " + light.intensity + " " + (light.isAmbient ? 1 : 0));
+
+                writerC.write(System.lineSeparator());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        try{
+            writerC.close();
+        }catch (IOException ignored){}
     }
 
     public void handleInput() {
-        if(INPUT_BUFFER != 0) {
+        if (INPUT_BUFFER != 0) {
             switch (INPUT_BUFFER) {
-                case 1 -> cursorY --;
-                case 2 -> cursorY ++;
-                case 3 -> cursorX --;
-                case 4 -> cursorX ++;
+                case 1 -> cursorY--;
+                case 2 -> cursorY++;
+                case 3 -> cursorX--;
+                case 4 -> cursorX++;
                 case 5 -> {
                     markerAX = cursorX;
                     markerAY = cursorY;
@@ -172,7 +202,7 @@ public class MapEditor extends JPanel {
                     markerBY = cursorY;
                 }
                 case 7 -> {
-                    if(mapMode == 0) {
+                    if (mapMode == 0) {
                         for (int i = markerAY; i <= markerBY; i++) {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 floorMap[i][j]++;
@@ -180,7 +210,7 @@ public class MapEditor extends JPanel {
                                 floorMap[i][j] = Math.min(40, floorMap[i][j]);
                             }
                         }
-                    }else{
+                    } else {
                         for (int i = markerAY; i <= markerBY; i++) {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 ceilMap[i][j]++;
@@ -191,7 +221,7 @@ public class MapEditor extends JPanel {
                     }
                 }
                 case 8 -> {
-                    if(mapMode == 0) {
+                    if (mapMode == 0) {
                         for (int i = markerAY; i <= markerBY; i++) {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 floorMap[i][j]--;
@@ -199,7 +229,7 @@ public class MapEditor extends JPanel {
                                 floorMap[i][j] = Math.max(0, floorMap[i][j]);
                             }
                         }
-                    }else{
+                    } else {
                         for (int i = markerAY; i <= markerBY; i++) {
                             for (int j = markerAX; j <= markerBX; j++) {
                                 ceilMap[i][j]--;
@@ -210,7 +240,7 @@ public class MapEditor extends JPanel {
                     }
                 }
                 case 9 -> {
-                    writeToFile("data/wfloor.txt", "data/wceil.txt");
+                    writeToFile("data/wfloor.txt", "data/wceil.txt", "data/lights.txt");
                 }
                 case 10 -> {
                     mapMode = 1 - mapMode;
@@ -218,12 +248,19 @@ public class MapEditor extends JPanel {
 //                    System.out.println(mapMode);
                 }
                 case 11 -> {
-                    for(int i=0; i<40; i++) {
-                        for(int j=0; j<40; j++) {
+                    for (int i = 0; i < 40; i++) {
+                        for (int j = 0; j < 40; j++) {
                             ceilMap[i][j] = 40;
                             floorMap[i][j] = 0;
                         }
                     }
+                }
+                case 12 -> {
+                    int lightHeight = 40 - (ceilMap[cursorY][cursorX] + 2);
+
+                    Light light = new Light(cursorY, lightHeight, cursorX, 2, Color.GREEN, false);
+
+                    lightList.add(light);
                 }
             }
 
@@ -237,18 +274,18 @@ public class MapEditor extends JPanel {
 
         handleInput();
 
-        for(int i=0; i<floorMap.length; i++) {
-            for(int j=0; j<floorMap[0].length; j++) {
-                if(i == cursorY && j == cursorX) {
+        for (int i = 0; i < floorMap.length; i++) {
+            for (int j = 0; j < floorMap[0].length; j++) {
+                if (i == cursorY && j == cursorX) {
                     g.setColor(Color.RED);
-                }else if(i >= markerAY && i <= markerBY && j >= markerAX && j <= markerBX) {
+                } else if (i >= markerAY && i <= markerBY && j >= markerAX && j <= markerBX) {
                     g.setColor(Color.GREEN);
-                }else{
+                } else {
                     int b = 0;
 
-                    if(mapMode == 0) {
+                    if (mapMode == 0) {
                         b = floorMap[i][j] * 5;
-                    }else{
+                    } else {
                         b = ceilMap[i][j] * 5;
                     }
 
@@ -261,9 +298,9 @@ public class MapEditor extends JPanel {
 
                 g.fillRect(j * 15, i * 15, 15, 15);
 
-                if(floorMap[i][j] > 0) {
+                if (floorMap[i][j] > 0) {
                     g.setColor(Color.GREEN);
-                }else{
+                } else {
                     g.setColor(Color.BLUE);
                 }
 
@@ -271,9 +308,9 @@ public class MapEditor extends JPanel {
 
                 g.setColor(Color.WHITE);
 
-                if(mapMode == 0) {
+                if (mapMode == 0) {
                     g.drawString(String.valueOf(floorMap[i][j]), j * 15 + 7, i * 15 + 7);
-                }else{
+                } else {
                     g.drawString(String.valueOf(ceilMap[i][j]), j * 15 + 7, i * 15 + 7);
                 }
             }
