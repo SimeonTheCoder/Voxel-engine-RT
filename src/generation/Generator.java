@@ -58,35 +58,69 @@ public class Generator {
 
         int[][][] ambientMap = new int[states.length][states[0].length][states[0][0].length];
 
+        int i_start = 0;
+        int j_start = 0;
+        int k_start = 0;
+
+        int i_end = states.length;
+        int j_end = states[0].length;
+        int k_end = states[0][0].length;
+
+        if(region == 0) {
+            i_end = 20;
+            j_end = 20;
+            k_end = 20;
+        }else if(region == 1) {
+            i_end = 20;
+            j_start = 20;
+            k_end = 20;
+        }else if(region == 2) {
+            i_end = 20;
+            j_end = 20;
+            k_start = 20;
+        }else if(region == 3) {
+            i_end = 20;
+            j_start = 20;
+            k_start = 20;
+        }else if(region == 4) {
+            i_start = 20;
+            j_end = 20;
+            k_end = 20;
+        }else if(region == 5) {
+            i_start = 20;
+            j_start = 20;
+            k_end = 20;
+        }else if(region == 6) {
+            i_start = 20;
+            j_end = 20;
+            k_start = 20;
+        }else if(region == 7) {
+            i_start = 20;
+            j_start = 20;
+            k_start = 20;
+        }
+
+        int px = (int) player.x;
+        int py = (int) player.y;
+        int pz = (int) player.z;
+
+        px /= CONSTANTS.STEP_SIZE;
+        py /= CONSTANTS.STEP_SIZE;
+        pz /= CONSTANTS.STEP_SIZE;
+
+        i_start = Math.max(i_start, pz - CONSTANTS.Z_VIEW_RANGE / 5);
+        i_end = Math.min(i_end, pz + CONSTANTS.Z_VIEW_RANGE);
+
+        j_start = Math.max(j_start, px - CONSTANTS.X_VIEW_RANGE);
+        j_end = Math.min(j_end, px + CONSTANTS.X_VIEW_RANGE);
+
+        k_start = Math.max(k_start, py - CONSTANTS.Y_VIEW_RANGE);
+        k_end = Math.min(k_end, py + CONSTANTS.Y_VIEW_RANGE);
+
 //        if(ao) {
-            for (int i = 0; i < states.length; i++) {
-                for (int j = 0; j < states[0].length; j++) {
-                    for (int k = 0; k < states[0][0].length; k++) {
-                        int px = (int) player.x;
-                        int py = (int) player.y;
-                        int pz = (int) player.z;
-
-                        px /= CONSTANTS.STEP_SIZE;
-                        py /= CONSTANTS.STEP_SIZE;
-                        pz /= CONSTANTS.STEP_SIZE;
-
-                        if(px - CONSTANTS.X_VIEW_RANGE <= j && j <= px + CONSTANTS.X_VIEW_RANGE) {
-
-                        }else{
-                            continue;
-                        }
-
-                        if(py - CONSTANTS.Y_VIEW_RANGE <= k && k <= py + CONSTANTS.Y_VIEW_RANGE) {
-
-                        }else{
-                            continue;
-                        }
-
-                        if(pz - CONSTANTS.Z_VIEW_RANGE <= i && i <= pz + CONSTANTS.Z_VIEW_RANGE) {
-
-                        }else{
-                            continue;
-                        }
+            for (int i = i_start; i < i_end; i++) {
+                for (int j = j_start; j < j_end; j++) {
+                    for (int k = k_start; k < k_end; k++) {
 
                         int nCount = 0;
 
@@ -120,42 +154,11 @@ public class Generator {
             }
 //        }
 
-        for (int i = 0; i < states.length; i += CONSTANTS.SCALE) {
-            for (int j = 0; j < states[0].length; j += CONSTANTS.SCALE) {
-                for (int k = 0; k < states[0][0].length; k += CONSTANTS.SCALE) {
-                    if(region == 0) {
-                        if(i > 19 || j > 19 || k > 19) {
-                            continue;
-                        }
-                    }else if(region == 1) {
-                        if(i > 19 || j < 20 || k > 19) {
-                            continue;
-                        }
-                    }else if(region == 2) {
-                        if(i > 19 || j > 19 || k < 20) {
-                            continue;
-                        }
-                    }else if(region == 3) {
-                        if(i > 19 || j < 20 || k < 20) {
-                            continue;
-                        }
-                    }else if(region == 4) {
-                        if(i < 20 || j > 19 || k > 19) {
-                            continue;
-                        }
-                    }else if(region == 5) {
-                        if(i < 20 || j < 20 || k > 19) {
-                            continue;
-                        }
-                    }else if(region == 6) {
-                        if(i < 20 || j > 19 || k < 20) {
-                            continue;
-                        }
-                    }else if(region == 7) {
-                        if(i < 20 || j < 20 || k < 20) {
-                            continue;
-                        }
-                    }
+
+
+        for (int i = i_start; i < i_end; i += CONSTANTS.SCALE) {
+            for (int j = j_start; j < j_end; j += CONSTANTS.SCALE) {
+                for (int k = k_start; k < k_end; k += CONSTANTS.SCALE) {
 
                     if (currLight.isAmbient) {
                         lightmapr[i][j][k] = (int) currLight.intensity * 5;
@@ -216,7 +219,7 @@ public class Generator {
 
                         boolean collision = false;
 
-                        for (double d = 3.5 / CONSTANTS.SCALE; d < distance; d += .1 / CONSTANTS.SCALE) {
+                        for (double d = 3.5 / CONSTANTS.SCALE; d < distance; d += .5 / CONSTANTS.SCALE) {
                             int newX = (int) (j + d * deltaX);
                             int newY = (int) (k + d * deltaY);
                             int newZ = (int) (i + d * deltaZ);

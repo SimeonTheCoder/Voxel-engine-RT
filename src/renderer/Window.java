@@ -42,6 +42,7 @@ public class Window extends JPanel {
     private boolean ao = true;
     private boolean wireframe = false;
     private boolean unlit = false;
+    private boolean multiThreading = false;
 
     public void readLights(String filename) {
         File file = new File(filename);
@@ -172,6 +173,10 @@ public class Window extends JPanel {
                 case 16 -> {
                     generateMap();
                 }
+
+                case 17 -> {
+                    multiThreading = !multiThreading;
+                }
             }
 
             System.out.println(player.x + " " + player.y + " " + player.z);
@@ -210,6 +215,8 @@ public class Window extends JPanel {
 
     @Override
     public void paint(Graphics g) {
+        long start = System.nanoTime();
+
         super.paint(g);
 
         g.setColor(Color.BLACK);
@@ -234,15 +241,21 @@ public class Window extends JPanel {
             }
         }
 
+        repository.sortFaces(player);
+
         if (!unlit) {
             LightningData data = new LightningData(states.length, states[0].length, states[0][0].length);
 //
             for (Light light : lightList) {
-                for(int i=0; i<8; i++) {
-                    LightningThread thread = new LightningThread(light, lmapr, lmapg, lmapb, ao, i, data, states, player);
+                if(multiThreading) {
+                    for (int i = 0; i < 8; i++) {
+                        LightningThread thread = new LightningThread(light, lmapr, lmapg, lmapb, ao, i, data, states, player);
 
-                    thread.run();
+                        thread.run();
 //                    data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, i));
+                    }
+                }else{
+                    data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, 8, player));
                 }
             }
 
@@ -250,8 +263,6 @@ public class Window extends JPanel {
             lmapg = data.lmapg;
             lmapb = data.lmapb;
         }
-
-        repository.sortFaces(player);
 
         for (Plane plane : repository.planes) {
             if (!plane.active) continue;
@@ -320,6 +331,16 @@ public class Window extends JPanel {
         }
 
         g.drawString("S: " + player.x / CONSTANTS.STEP_SIZE + " " + player.y / CONSTANTS.STEP_SIZE + " " + player.z / CONSTANTS.STEP_SIZE, CONSTANTS.STEP_SIZE, CONSTANTS.STEP_SIZE);
+
+        long end = System.nanoTime();
+        long elapsedTime = end - start;
+
+        double elapsed = elapsedTime / 1000000.;
+
+        g.setColor(Color.GREEN);
+        g.drawString(String.format("FPS: %.2f", 1 / elapsed * 1000) , 100, 100);
+        g.drawString("Multithreading: " + multiThreading, 100, 150);
+//        g.drawString("FPS: " + 1 / elapsed * 1000 , 100, 100);
 
         lightList.remove(l);
 

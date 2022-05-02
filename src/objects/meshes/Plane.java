@@ -14,6 +14,8 @@ public class Plane {
 
     public Cube parentCube;
 
+    public Point3 avePoint;
+
     public Plane() {
         points = new Point3[4];
 
@@ -24,6 +26,8 @@ public class Plane {
         this.points = points;
 
         active = true;
+
+        avePoint = averagePoint();
     }
 
     public Point3[] getPoints() {
@@ -72,7 +76,7 @@ public class Plane {
     public double distanceTo(Point3 target) {
         Point3 points[] = getPoints();
 
-        Point3 planePoint = averagePoint();
+        Point3 planePoint = avePoint;
 
         double deltaX = target.x - planePoint.x;
         double deltaY = target.y - planePoint.y;

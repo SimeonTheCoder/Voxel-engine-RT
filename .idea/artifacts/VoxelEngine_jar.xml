@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="VoxelEngine:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/VoxelEngine_jar</output-path>
+    <root id="archive" name="VoxelEngine.jar">
+      <element id="module-output" name="VoxelEngine" />
+    </root>
+  </artifact>
+</component>
