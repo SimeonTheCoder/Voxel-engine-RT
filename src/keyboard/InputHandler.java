@@ -31,6 +31,7 @@ public class InputHandler implements KeyListener {
             case 'm' -> Window.INPUT_BUFFER = 15;
             case 'r' -> Window.INPUT_BUFFER = 16;
             case 't' -> Window.INPUT_BUFFER = 17;
+            case 'p' -> Window.INPUT_BUFFER = 18;
         }
 
         System.out.println(e.getKeyChar());

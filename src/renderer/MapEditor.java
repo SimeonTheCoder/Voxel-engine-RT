@@ -54,6 +54,14 @@ public class MapEditor extends JPanel {
         tagMap = new int[40][40];
 
         readFloorMap("data/wfloor.txt", "data/wceil.txt", "data/tmap.txt");
+
+//        for(int i=0; i<40; i++) {
+//            for(int j=0; j<40; j++) {
+//                if(i % 10 == 0 || j % 10 == 0) {
+//                    floorMap[i][j] = 40;
+//                }
+//            }
+//        }
     }
 
     public void readFloorMap(String filename, String filename2, String filename3) {
@@ -324,7 +332,7 @@ public class MapEditor extends JPanel {
                 case 12 -> {
                     int lightHeight = 40 - (ceilMap[cursorY][cursorX] + 2);
 
-                    Light light = new Light(cursorY, lightHeight, cursorX, 2, Color.GREEN, false);
+                    Light light = new Light(cursorY, lightHeight, cursorX, 2, Color.WHITE, false);
 
                     lightList.add(light);
                 }

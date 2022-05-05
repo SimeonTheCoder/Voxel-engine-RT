@@ -34,9 +34,9 @@ public class Generator {
                             for (int m = 0; m < scale; m++) {
                                 for (int p = 0; p < scale; p++) {
                                     try {
-                                        if(k == worldFloorMap[j/scale][i/scale]) {
-                                            states[i / scale + l][j / scale + m][k / scale + p] = worldTagMap[j/scale][i/scale];
-                                        }else{
+                                        if (k == worldFloorMap[j / scale][i / scale]) {
+                                            states[i / scale + l][j / scale + m][k / scale + p] = worldTagMap[j / scale][i / scale];
+                                        } else {
                                             states[i / scale + l][j / scale + m][k / scale + p] = 1;
                                         }
                                     } catch (Exception exception) {
@@ -53,10 +53,11 @@ public class Generator {
         return states;
     }
 
-    public static LightningData getLightmap(int[][][] states, Light currLight, int[][][] lightmapr, int[][][] lightmapg, int[][][] lightmapb, boolean ao, int region, Player player) {
+    public static LightningData getLightmap(int[][][] states, Light currLight, int[][][] lightmapr, int[][][] lightmapg, int[][][] lightmapb, boolean ao, int region, Player player, boolean fr) {
         LightningData data = new LightningData(lightmapr.length, lightmapr[0].length, lightmapr[0][0].length);
 
         int[][][] ambientMap = new int[states.length][states[0].length][states[0][0].length];
+        int[][][] normalDir = new int[states.length][states[0].length][states[0][0].length];
 
         int i_start = 0;
         int j_start = 0;
@@ -66,35 +67,35 @@ public class Generator {
         int j_end = states[0].length;
         int k_end = states[0][0].length;
 
-        if(region == 0) {
+        if (region == 0) {
             i_end = 20;
             j_end = 20;
             k_end = 20;
-        }else if(region == 1) {
+        } else if (region == 1) {
             i_end = 20;
             j_start = 20;
             k_end = 20;
-        }else if(region == 2) {
+        } else if (region == 2) {
             i_end = 20;
             j_end = 20;
             k_start = 20;
-        }else if(region == 3) {
+        } else if (region == 3) {
             i_end = 20;
             j_start = 20;
             k_start = 20;
-        }else if(region == 4) {
+        } else if (region == 4) {
             i_start = 20;
             j_end = 20;
             k_end = 20;
-        }else if(region == 5) {
+        } else if (region == 5) {
             i_start = 20;
             j_start = 20;
             k_end = 20;
-        }else if(region == 6) {
+        } else if (region == 6) {
             i_start = 20;
             j_end = 20;
             k_start = 20;
-        }else if(region == 7) {
+        } else if (region == 7) {
             i_start = 20;
             j_start = 20;
             k_start = 20;
@@ -118,42 +119,47 @@ public class Generator {
         k_end = Math.min(k_end, py + CONSTANTS.Y_VIEW_RANGE);
 
 //        if(ao) {
-            for (int i = i_start; i < i_end; i++) {
-                for (int j = j_start; j < j_end; j++) {
-                    for (int k = k_start; k < k_end; k++) {
+        for (int i = i_start; i < i_end; i++) {
+            for (int j = j_start; j < j_end; j++) {
+                for (int k = k_start; k < k_end; k++) {
 
-                        int nCount = 0;
+                    int nCount = 0;
 
-                        if (i > 0 && states[i - 1][j][k] == 0) {
-                            nCount++;
-                        }
-
-                        if (i < states.length - 1 && states[i + 1][j][k] == 0) {
-                            nCount++;
-                        }
-
-                        if (j > 0 && states[i][j - 1][k] == 0) {
-                            nCount++;
-                        }
-
-                        if (j < states[0].length - 1 && states[i][j + 1][k] == 0) {
-                            nCount++;
-                        }
-
-                        if (k > 0 && states[i][j][k - 1] == 0) {
-                            nCount++;
-                        }
-
-                        if (k < states[0][0].length - 1 && states[i][j][k + 1] == 0) {
-                            nCount++;
-                        }
-
-                        ambientMap[i][j][k] = nCount;
+                    if (i > 0 && states[i - 1][j][k] == 0) {
+                        nCount++;
+                        normalDir[i][j][k] = 0; //Front
                     }
+
+                    if (i < states.length - 1 && states[i + 1][j][k] == 0) {
+                        nCount++;
+                        normalDir[i][j][k] = 1; //Back
+                    }
+
+                    if (j > 0 && states[i][j - 1][k] == 0) {
+                        nCount++;
+                        normalDir[i][j][k] = 2; //Left
+                    }
+
+                    if (j < states[0].length - 1 && states[i][j + 1][k] == 0) {
+                        nCount++;
+                        normalDir[i][j][k] = 3; //Right
+                    }
+
+                    if (k > 0 && states[i][j][k - 1] == 0) {
+                        nCount++;
+                        normalDir[i][j][k] = 4; //Up
+                    }
+
+                    if (k < states[0][0].length - 1 && states[i][j][k + 1] == 0) {
+                        nCount++;
+                        normalDir[i][j][k] = 5; //Down
+                    }
+
+                    ambientMap[i][j][k] = nCount;
                 }
             }
+        }
 //        }
-
 
 
         for (int i = i_start; i < i_end; i += CONSTANTS.SCALE) {
@@ -206,12 +212,35 @@ public class Generator {
 
                     int ll = 0;
 
-                    if (states[i][j][k] != 0 && states[i][j][k] != 3 && ambientMap[i][j][k] > 0) {
-                        double deltaX = light.x - j;
-                        double deltaY = light.y - k;
-                        double deltaZ = light.z - i;
+                    double jCopy = j;
+                    double iCopy = i;
+                    double kCopy = k;
 
-                        double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+                    if (normalDir[i][j][k] == 0) {
+                        iCopy -= .5;
+                    } else if (normalDir[i][j][k] == 1) {
+                        iCopy += .5;
+                    } else if (normalDir[i][j][k] == 2) {
+                        jCopy -= .5;
+                    } else if (normalDir[i][j][k] == 3) {
+                        jCopy += .5;
+                    } else if (normalDir[i][j][k] == 4) {
+                        kCopy += .5;
+                    } else if (normalDir[i][j][k] == 5) {
+                        kCopy -= .5;
+                    }
+
+                    if (states[i][j][k] != 0 && states[i][j][k] != 3 && ambientMap[i][j][k] > 0) {
+                        double deltaX = light.x - jCopy;
+                        double deltaY = light.y - kCopy;
+                        double deltaZ = light.z - iCopy;
+
+                        double sum = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+                        double sqrt = Math.sqrt(sum);
+
+                        double distance = 0;
+
+                        distance = sqrt;
 
                         deltaX /= distance;
                         deltaY /= distance;
@@ -219,7 +248,13 @@ public class Generator {
 
                         boolean collision = false;
 
-                        for (double d = 3.5 / CONSTANTS.SCALE; d < distance; d += .5 / CONSTANTS.SCALE) {
+                        double step = 1 + distance / 180.;
+
+                        if (!fr) {
+                            step = 1;
+                        }
+
+                        for (double d = 3 / CONSTANTS.SCALE; d < distance; d += step * CONSTANTS.SCALE) {
                             int newX = (int) (j + d * deltaX);
                             int newY = (int) (k + d * deltaY);
                             int newZ = (int) (i + d * deltaZ);
@@ -242,7 +277,7 @@ public class Generator {
                         }
 
                         if (!collision) {
-                            ll += (int) ((50 - distance * 1.5) * light.intensity);
+                            ll += (int) ((50 * Math.max(1, (currLight.intensity - 2)) - distance * 1.5) * light.intensity);
 
 //                            ll -= ambientMap[i][j][k] * 200;
 
@@ -343,7 +378,7 @@ public class Generator {
                     if (states[i][j][k] != 0) {
                         Cube cube = new Cube(
                                 new Point3(CONSTANTS.STEP_SIZE * scale * j, CONSTANTS.STEP_SIZE * scale * (states[0][0].length - k), i * scale * CONSTANTS.STEP_SIZE * 2),
-                                new Point3(CONSTANTS.STEP_SIZE * scale * j + CONSTANTS.STEP_SIZE * scale, CONSTANTS.STEP_SIZE * scale * (states[0][0].length - k) + CONSTANTS.STEP_SIZE * scale, CONSTANTS.STEP_SIZE * scale*2 + i * CONSTANTS.STEP_SIZE * scale * 2)
+                                new Point3(CONSTANTS.STEP_SIZE * scale * j + CONSTANTS.STEP_SIZE * scale, CONSTANTS.STEP_SIZE * scale * (states[0][0].length - k) + CONSTANTS.STEP_SIZE * scale, CONSTANTS.STEP_SIZE * scale * 2 + i * CONSTANTS.STEP_SIZE * scale * 2)
                         );
 
                         cube.xSector = j;
@@ -374,27 +409,27 @@ public class Generator {
                             cube.removePlane(1);
                         }
 
-                        if(k == 39) {
+                        if (k == 39) {
                             cube.removePlane(1);
-                        }else if(k == 0) {
+                        } else if (k == 0) {
                             cube.removePlane(2);
                         }
 
-                        if(j == 0) {
+                        if (j == 0) {
                             cube.removePlane(3);
-                        }else if(j == 39) {
+                        } else if (j == 39) {
                             cube.removePlane(4);
                         }
 
-                        if(i == 0) {
+                        if (i == 0) {
                             cube.removePlane(0);
-                        }else if(i == 39) {
+                        } else if (i == 39) {
                             cube.removePlane(5);
                         }
 
-                        if(states[i][j][k] != 4) {
+                        if (states[i][j][k] != 4) {
                             cube.removePlane(6);
-                        }else{
+                        } else {
                             cube.removePlane(0);
                             cube.removePlane(3);
                             cube.removePlane(4);

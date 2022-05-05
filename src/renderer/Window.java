@@ -43,6 +43,11 @@ public class Window extends JPanel {
     private boolean wireframe = false;
     private boolean unlit = false;
     private boolean multiThreading = false;
+    private boolean fastRoots = false;
+
+    private int lastPcx = 0;
+    private int lastPcy = 0;
+    private int lastPcz = 0;
 
     public void readLights(String filename) {
         File file = new File(filename);
@@ -158,7 +163,7 @@ public class Window extends JPanel {
                     ao = !ao;
 
                     for (Light light : lightList) {
-                        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, 0, player));
+                        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, 0, player, fastRoots));
                     }
                 }
 
@@ -176,6 +181,10 @@ public class Window extends JPanel {
 
                 case 17 -> {
                     multiThreading = !multiThreading;
+                }
+
+                case 18 -> {
+                    fastRoots = !fastRoots;
                 }
             }
 
@@ -231,38 +240,44 @@ public class Window extends JPanel {
 
         lightList.add(l);
 
-        for (int i = 0; i < states.length; i++) {
-            for (int j = 0; j < states[0].length; j++) {
-                for (int k = 0; k < states[0][0].length; k++) {
-                    lmapr[i][j][k] = 0;
-                    lmapg[i][j][k] = 0;
-                    lmapb[i][j][k] = 0;
-                }
-            }
-        }
+        int pcx = (int) (player.x / CONSTANTS.STEP_SIZE);
+        int pcy = (int) (40 - player.y / CONSTANTS.STEP_SIZE);
+        int pcz = (int) (player.z / CONSTANTS.STEP_SIZE);
 
-        repository.sortFaces(player);
-
-        if (!unlit) {
-            LightningData data = new LightningData(states.length, states[0].length, states[0][0].length);
-//
-            for (Light light : lightList) {
-                if(multiThreading) {
-                    for (int i = 0; i < 8; i++) {
-                        LightningThread thread = new LightningThread(light, lmapr, lmapg, lmapb, ao, i, data, states, player);
-
-                        thread.run();
-//                    data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, i));
+        if(pcx != lastPcx || pcy != lastPcy || pcz != lastPcz) {
+            if (!unlit) {
+                for (int i = 0; i < states.length; i++) {
+                    for (int j = 0; j < states[0].length; j++) {
+                        for (int k = 0; k < states[0][0].length; k++) {
+                            lmapr[i][j][k] = 0;
+                            lmapg[i][j][k] = 0;
+                            lmapb[i][j][k] = 0;
+                        }
                     }
-                }else{
-                    data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, 8, player));
                 }
-            }
 
-            lmapr = data.lmapr;
-            lmapg = data.lmapg;
-            lmapb = data.lmapb;
+                LightningData data = new LightningData(states.length, states[0].length, states[0][0].length);
+//
+                for (Light light : lightList) {
+                    if(multiThreading) {
+                        for (int i = 0; i < 8; i++) {
+                            LightningThread thread = new LightningThread(light, lmapr, lmapg, lmapb, ao, i, data, states, player, fastRoots);
+
+                            thread.run();
+//                    data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, i));
+                        }
+                    }else{
+                        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, 8, player, fastRoots));
+                    }
+                }
+
+                lmapr = data.lmapr;
+                lmapg = data.lmapg;
+                lmapb = data.lmapb;
+            }
         }
+
+        repository.sortFaces(player, fastRoots);
 
         for (Plane plane : repository.planes) {
             if (!plane.active) continue;
@@ -307,6 +322,10 @@ public class Window extends JPanel {
                 int brightnessb = (int) (lmapb[currSectorZ][currSectorX][currSectorY] / 512. * plane.color.getBlue() + lmapb[currSectorZ][currSectorX][currSectorY] / 2);
                 int brightnessa = plane.color.getAlpha();
 
+                brightnessr = Math.min(255, Math.max(0, brightnessr));
+                brightnessg = Math.min(255, Math.max(0, brightnessg));
+                brightnessb = Math.min(255, Math.max(0, brightnessb));
+
                 if(plane.getPoints()[0].z - player.z > 1500) {
                     brightnessr -= (plane.getPoints()[0].z - player.z - 1500) / 2;
                     brightnessg -= (plane.getPoints()[0].z - player.z - 1500) / 2;
@@ -340,9 +359,14 @@ public class Window extends JPanel {
         g.setColor(Color.GREEN);
         g.drawString(String.format("FPS: %.2f", 1 / elapsed * 1000) , 100, 100);
         g.drawString("Multithreading: " + multiThreading, 100, 150);
+        g.drawString("FastRoots: " + fastRoots, 100, 200);
 //        g.drawString("FPS: " + 1 / elapsed * 1000 , 100, 100);
 
         lightList.remove(l);
+
+        lastPcx = pcx;
+        lastPcy = pcy;
+        lastPcz = pcz;
 
         repaint();
     }

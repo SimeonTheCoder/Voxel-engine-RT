@@ -73,7 +73,7 @@ public class Plane {
         return planePoint;
     }
 
-    public double distanceTo(Point3 target) {
+    public double distanceTo(Point3 target, boolean fastRoot) {
         Point3 points[] = getPoints();
 
         Point3 planePoint = avePoint;
@@ -82,7 +82,13 @@ public class Plane {
         double deltaY = target.y - planePoint.y;
         double deltaZ = target.z - planePoint.z;
 
-        return Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+        double d = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+
+        if(fastRoot) {
+            return Double.longBitsToDouble(((Double.doubleToLongBits(d) - (1l << 52)) >> 1) + (1l << 61));
+        }else{
+            return Math.sqrt(d);
+        }
     }
 
     public void rotate(double angle, Point3 pivot) {

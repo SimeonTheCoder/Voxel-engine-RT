@@ -20,12 +20,16 @@ public class LightningThread implements Runnable {
 
     private Player player;
 
+    private boolean fastRoots;
+
     public LightningThread(Light light, int[][][] lmapr, int[][][] lmapg, int[][][] lmapb,
-                           boolean ao, int region, LightningData data, int[][][] states, Player player) {
+                           boolean ao, int region, LightningData data, int[][][] states, Player player, boolean fastRoots) {
         this.light = light;
         this.lmapr = lmapr;
         this.lmapg = lmapg;
         this.lmapb = lmapb;
+
+        this.fastRoots = fastRoots;
 
         this.ao = ao;
         this.region = region;
@@ -38,6 +42,6 @@ public class LightningThread implements Runnable {
 
     @Override
     public void run() {
-        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, region, player));
+        data.combine(Generator.getLightmap(states, light, lmapr, lmapg, lmapb, ao, region, player, fastRoots));
     }
 }

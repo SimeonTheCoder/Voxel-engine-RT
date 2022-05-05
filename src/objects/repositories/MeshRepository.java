@@ -23,14 +23,14 @@ public class MeshRepository {
         planes.addAll(cube.getPlanes());
     }
 
-    public void sortFaces(Player player) {
+    public void sortFaces(Player player, boolean fastRoot) {
         planes.sort((a, b) -> {
             if(a.getPoints()[0].z != b.getPoints()[0].z) {
                 return Double.compare((b.getPoints()[0].z), a.getPoints()[0].z);
             }
 
-            Double distanceA = a.distanceTo(player);
-            Double distanceB = b.distanceTo(player);
+            Double distanceA = a.distanceTo(player, fastRoot);
+            Double distanceB = b.distanceTo(player, fastRoot);
 
             return distanceB.compareTo(distanceA);
         });
